@@ -1,4 +1,5 @@
 from dbm import error
+from genericpath import exists
 from importlib.resources import path
 import os
 import sys
@@ -12,12 +13,15 @@ import shutil
 import gzip
 import zipfile
 
-from addition import extensions, translate
+from clean_folder.addition import *
 
 for i in range(2000):
     print(i)
 print("|", "_"*50)
 
+
+def helloworld():
+    print("hello world")
 
 # ---------------   NORMALIZE --------------------
 
@@ -72,7 +76,7 @@ def move_to_folder(filepat):
     # Удаление .DS_Store
     if os.path.basename(filepat).startswith(".DS"):
         print(
-            f"| ------- {os.path.basename(filepat)} ------- КУСОК ГОВНА УДАЛЕН")
+            f"| ------- {os.path.basename(filepat)} ------- DELETE  КУСОК ГОВНА")
         os.remove(filepat)
         return True
 
@@ -138,6 +142,8 @@ def move_to_folder(filepat):
                     print(
                         f"| Файл {os.path.basename(filepath)} перемещена в {key_name}")
                     return True
+                except shutil.Error:
+                    print("PLS WORK")
                 except:
                     os.chdir(DIRECTORY)
                     print(
@@ -183,6 +189,7 @@ def sorting_directories(path_to_file):
         print(
             f"| ------- {os.path.basename(path_to_file)} ------- КУСОК ГОВНА УДАЛЕН")
         os.remove(path_to_file)
+        return True
         # test
         # sorting_directories(os.path.dirname(path_to_file))
 
@@ -199,8 +206,12 @@ def sorting_directories(path_to_file):
 
     while here_need_a_sort:
         for filepath in dir.iterdir():
+            if os.path.exists(filepath):
+                pass
+            else:
+                continue
             justname = os.path.basename(filepath)
-            print(f"|\n| Файл - {justname}")
+            print(f"|\n| Файл - {justname} --- =+")
             if os.path.isdir(filepath):
                 print(
                     f"|\n| Этот файл директория - {justname}")
@@ -218,30 +229,57 @@ def sorting_directories(path_to_file):
                         print("|"+chr(684)*50)
                         sorting_directories(filepath)
             else:
-                move_to_folder(filepath)
-            print("|{}".format("="*50))
+                if os.path.basename(filepath).startswith(".DS_"):
+                    print("попытка   уталить каку")
+                    try:
+                        os.remove(filepath)
+                        continue           # ------------- tut
+                    except FileNotFoundError:
+                        here_need_a_sort = False
+                else:
+                    # breakpoint()
+                    print("| Выполняем Move to folder")
+                    move_to_folder(filepath)
+                    continue  # ----------- tut
+
+            print("|{:=^50}".format("-Konets-"))
         here_need_a_sort = False
 
         print("{:_^50}".format("ФИНИШНАЯ ПРЯМАЯ"))
-        for noneeddir in new_dir.iterdir():
-            if os.path.basename(noneeddir) in extensions:
-                print(f"| Файл {os.path.basename(noneeddir)} не для проверки")
-                continue
-            elif os.path.basename(noneeddir).startswith(".DS"):
-                print("Только тут  я рад видеть дс стор)")
-                here_need_a_sort = False
-                break
-            elif os.path.basename(noneeddir) not in extensions:
-                print(f"| NONEDIR is - {os.path.basename(noneeddir)}\n|")
-                print("{:.^50}".format("Вход в рекурсию на конце"))
-                sorting_directories(noneeddir)
-            else:
-                print("ELSE")
-                break
+        try:
+            for noneeddir in new_dir.iterdir():
+                if os.path.basename(noneeddir) in extensions:
+                    print(
+                        f"| Файл {os.path.basename(noneeddir)} не для проверки")
+                    continue
+                elif os.path.basename(noneeddir).startswith(".DS"):
+                    print("Только тут  я рад видеть дс стор)")
+                    here_need_a_sort = False
+                    return "Ok"
+                    break
+                elif os.path.basename(noneeddir) not in extensions:
+                    print(f"| NONEDIR is - {os.path.basename(noneeddir)}\n|")
+                    print("{:.^50}".format("Вход в рекурсию на конце"))
+                    try:
+                        sorting_directories(noneeddir)
+                    except:
+                        print('its ok')
+                        break
+                else:
+                    print("ELSE")
+                    return "FINE"
+                    break
+        except:
+            print("its ok ")
 
     return "| WORK IS DONE\n|{:_^50}".format("Thanks for using")
 
 
-DIRECTORY = sys.argv[1]
+DIRECTORY = ""
 
-print(sorting_directories(DIRECTORY))
+
+def main():
+    DIR = sys.argv[1]
+    DIRECTORY = DIR
+    sorting_directories(DIRECTORY)
+    print("Yep i hope this work)\nThanks for using :)")
